@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Geri Sayım - Hatunumla Buluşma</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="./styles.css" />
+	<meta name="description" content="Hatunumla buluşmaya kalan süre için romantik ve sade geri sayım." />
+</head>
+<body>
+	<main class="page">
+		<section class="container" aria-live="polite" aria-atomic="true">
+			<div class="heart" aria-hidden="true">❤</div>
+			<h1 class="title">Hatunumla buluşmaya kalan süre:</h1>
+			<p class="subtitle">Hedef: 29 Eylül 2025 Pazartesi 15:00 (İstanbul)</p>
+
+			<div class="countdown" role="timer" aria-label="Geri sayım">
+				<div class="slot">
+					<div class="value" id="days">0</div>
+					<div class="label">gün</div>
+				</div>
+				<div class="sep">:</div>
+				<div class="slot">
+					<div class="value" id="hours">0</div>
+					<div class="label">saat</div>
+				</div>
+				<div class="sep">:</div>
+				<div class="slot">
+					<div class="value" id="minutes">0</div>
+					<div class="label">dakika</div>
+				</div>
+				<div class="sep">:</div>
+				<div class="slot">
+					<div class="value" id="seconds">0</div>
+					<div class="label">saniye</div>
+				</div>
+			</div>
+
+			<p class="note" id="doneText" hidden>Buluşma zamanı geldi! ❤</p>
+		</section>
+
+		<section class="fun" aria-labelledby="fun-title">
+			<h2 id="fun-title">Karımı görmediğim zaman ben:</h2>
+			<video class="fun-video" src="./bagirma.mp4" controls preload="metadata" playsinline muted></video>
+		</section>
+	</main>
+	<script src="./script.js"></script>
+</body>
+</html> 
