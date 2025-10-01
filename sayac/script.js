@@ -305,6 +305,11 @@ function updateCompletedPage() {
 function updateNextDatePage() {
 	const container = document.getElementById('next-date-content');
 	
+	console.log('updateNextDatePage çağrıldı');
+	console.log('currentDate:', currentDate);
+	console.log('dateTopics:', dateTopics);
+	console.log('isAdminLoggedIn:', isAdminLoggedIn);
+	
 	if (!currentDate) {
 		container.innerHTML = '<div class="no-content"><p>Henüz bir date planlanmamış.</p></div>';
 		return;
@@ -321,6 +326,7 @@ function updateNextDatePage() {
 	};
 	
 	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	console.log('currentTopic:', currentTopic);
 	
 	if (!currentTopic || !currentTopic.routes || currentTopic.routes.length === 0) {
 		container.innerHTML = `
@@ -338,7 +344,7 @@ function updateNextDatePage() {
 	container.innerHTML = `
 		<div class="next-date-card">
 			<div class="date-header">
-				<h2>${currentTopic.title}</h2>
+				<h2>${currentTopic.title || 'Date Başlığı'}</h2>
 				<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
 				${isAdminLoggedIn ? `
 					<div class="date-header-actions">
@@ -352,14 +358,14 @@ function updateNextDatePage() {
 				<div class="admin-controls">
 					<div class="admin-section">
 						<h4>📝 Date Bilgileri</h4>
-						<div class="form-row">
-							<label>Date Başlığı:</label>
-							<input type="text" id="edit-date-title" value="${currentTopic.title}" onchange="updateDateTitle(this.value)">
-						</div>
-						<div class="form-row">
-							<label>Genel Açıklama:</label>
-							<textarea id="edit-date-description" placeholder="Date açıklaması" onchange="updateDateDescription(this.value)">${currentTopic.description}</textarea>
-						</div>
+					<div class="form-row">
+						<label>Date Başlığı:</label>
+						<input type="text" id="edit-date-title" value="${currentTopic.title || ''}" onchange="updateDateTitle(this.value)">
+					</div>
+					<div class="form-row">
+						<label>Genel Açıklama:</label>
+						<textarea id="edit-date-description" placeholder="Date açıklaması" onchange="updateDateDescription(this.value)">${currentTopic.description || ''}</textarea>
+					</div>
 					</div>
 					
 					<div class="admin-section">
@@ -375,7 +381,7 @@ function updateNextDatePage() {
 						<div class="route-header">
 							<h3>${index + 1}. Rotamız</h3>
 							<div class="route-location">
-								<input type="text" id="route-location-${index}" value="${route.location}" 
+								<input type="text" id="route-location-${index}" value="${route.location || ''}" 
 									${isAdminLoggedIn ? '' : 'readonly'} 
 									placeholder="İlçe/Konum" 
 									onchange="updateRouteLocation(${index}, this.value)">
@@ -417,7 +423,7 @@ function updateNextDatePage() {
 								<textarea id="route-description-${index}" 
 									${isAdminLoggedIn ? '' : 'readonly'} 
 									placeholder="Rota açıklaması" 
-									onchange="updateRouteDescription(${index}, this.value)">${route.description}</textarea>
+									onchange="updateRouteDescription(${index}, this.value)">${route.description || ''}</textarea>
 							</div>
 							
 							${isAdminLoggedIn ? `
@@ -1085,6 +1091,7 @@ function addNewRoute() {
 	currentTopic.routes.push(newRoute);
 	saveData();
 	updateNextDatePage();
+	alert('Yeni rota eklendi!');
 }
 
 // Rotayı sil
