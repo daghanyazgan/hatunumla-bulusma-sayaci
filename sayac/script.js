@@ -346,95 +346,90 @@ function updateNextDatePage() {
 			<div class="date-header">
 				<h2>${currentTopic.title || 'Date Başlığı'}</h2>
 				<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
-				${isAdminLoggedIn ? `
-					<div class="date-header-actions">
-						<button class="btn btn-primary" onclick="editDateTitle()">Başlık Düzenle</button>
-						<button class="btn btn-secondary" onclick="editDateTime()">Saat Düzenle</button>
-					</div>
-				` : ''}
 			</div>
 			
-			${isAdminLoggedIn ? `
-				<div class="admin-controls">
-					<div class="admin-section">
-						<h4>📝 Date Bilgileri</h4>
-					<div class="form-row">
-						<label>Date Başlığı:</label>
-						<input type="text" id="edit-date-title" value="${currentTopic.title || ''}" onchange="updateDateTitle(this.value)">
-					</div>
-					<div class="form-row">
-						<label>Genel Açıklama:</label>
-						<textarea id="edit-date-description" placeholder="Date açıklaması" onchange="updateDateDescription(this.value)">${currentTopic.description || ''}</textarea>
-					</div>
-					</div>
-					
-					<div class="admin-section">
-						<h4>🗺️ Rota Yönetimi</h4>
-						<button class="btn btn-primary" onclick="addNewRoute()">+ Yeni Rota Ekle</button>
-					</div>
-				</div>
-			` : ''}
-			
-			<div class="routes-showcase">
+			<div class="routes-container">
 				${currentTopic.routes.map((route, index) => `
-					<div class="route-section">
-						<div class="route-header">
-							<h3>${index + 1}. Rotamız</h3>
-							<div class="route-location">
-								<input type="text" id="route-location-${index}" value="${route.location || ''}" 
-									${isAdminLoggedIn ? '' : 'readonly'} 
-									placeholder="İlçe/Konum" 
-									onchange="updateRouteLocation(${index}, this.value)">
-								${isAdminLoggedIn ? `
-									<button class="btn btn-small btn-danger" onclick="deleteRoute(${index})" title="Rotayı Sil">×</button>
-								` : ''}
-							</div>
-						</div>
+					<div class="route-card">
+						<div class="route-number">${index + 1}. Rota</div>
 						
 						<div class="route-content">
-							<div class="route-images">
+							<!-- Görseller -->
+							<div class="route-photos">
 								${route.photos && route.photos.length > 0 ? `
-									<div class="image-slider" id="slider-${index}">
-										<div class="slider-container">
-											${route.photos.map((photo, photoIndex) => `
-												<div class="slide ${photoIndex === 0 ? 'active' : ''}">
-													<img src="${photo}" alt="Rota fotoğrafı" />
-													${isAdminLoggedIn ? `
-														<button class="delete-photo" onclick="deleteRoutePhoto(${index}, ${photoIndex})" title="Fotoğrafı Sil">×</button>
-													` : ''}
-												</div>
-											`).join('')}
-										</div>
-										${route.photos.length > 1 ? `
-											<button class="slider-btn prev" onclick="changeSlide(${index}, -1)">‹</button>
-											<button class="slider-btn next" onclick="changeSlide(${index}, 1)">›</button>
-											<div class="slider-dots">
-												${route.photos.map((_, photoIndex) => `
-													<button class="dot ${photoIndex === 0 ? 'active' : ''}" 
-														onclick="goToSlide(${index}, ${photoIndex})"></button>
-												`).join('')}
+									<div class="photos-grid">
+										${route.photos.map((photo, photoIndex) => `
+											<div class="photo-item">
+												<img src="${photo}" alt="Rota fotoğrafı" />
+												${isAdminLoggedIn ? `
+													<button class="delete-photo" onclick="deleteRoutePhoto(${index}, ${photoIndex})">×</button>
+												` : ''}
 											</div>
-										` : ''}
+										`).join('')}
 									</div>
-								` : '<div class="no-images">Henüz görsel eklenmemiş</div>'}
+								` : '<div class="no-photos">Henüz görsel eklenmemiş</div>'}
+								${isAdminLoggedIn ? `
+									<button class="btn btn-primary add-photos-btn" onclick="addRoutePhotos(${index})">
+										📸 Görsel Ekle
+									</button>
+								` : ''}
 							</div>
 							
+							<!-- Açıklama -->
 							<div class="route-description">
-								<textarea id="route-description-${index}" 
+								<textarea 
+									id="route-description-${index}" 
 									${isAdminLoggedIn ? '' : 'readonly'} 
-									placeholder="Rota açıklaması" 
-									onchange="updateRouteDescription(${index}, this.value)">${route.description || ''}</textarea>
+									placeholder="Bu rotada neler yapacağız?" 
+									onchange="updateRouteDescription(${index}, this.value)"
+								>${route.description || ''}</textarea>
 							</div>
 							
-							${isAdminLoggedIn ? `
-								<div class="route-actions">
-									<button class="btn btn-small btn-primary" onclick="addRoutePhotos(${index})">📸 Görsel Ekle</button>
-									<button class="btn btn-small btn-secondary" onclick="editRouteTitle(${index})">✏️ Başlık Düzenle</button>
+							<!-- Instagram ve Map -->
+							<div class="route-links">
+								<div class="link-row">
+									<label>📱 Instagram:</label>
+									<input 
+										type="text" 
+										id="route-instagram-${index}" 
+										value="${route.instagram || ''}" 
+										${isAdminLoggedIn ? '' : 'readonly'} 
+										placeholder="Instagram hesabı veya link" 
+										onchange="updateRouteInstagram(${index}, this.value)"
+									>
 								</div>
+								<div class="link-row">
+									<label>🗺️ Map Adresi:</label>
+									<input 
+										type="text" 
+										id="route-map-${index}" 
+										value="${route.mapAddress || ''}" 
+										${isAdminLoggedIn ? '' : 'readonly'} 
+										placeholder="Google Maps adresi" 
+										onchange="updateRouteMap(${index}, this.value)"
+									>
+								</div>
+							</div>
+							
+							<!-- Sil Butonu -->
+							${isAdminLoggedIn ? `
+								<button class="btn btn-danger delete-route-btn" onclick="deleteRoute(${index})">
+									🗑️ Rotayı Sil
+								</button>
 							` : ''}
 						</div>
 					</div>
 				`).join('')}
+				
+				<!-- + Rota Ekleme Butonu -->
+				${isAdminLoggedIn ? `
+					<div class="add-route-card" onclick="addNewRoute()">
+						<div class="add-route-content">
+							<div class="plus-icon">+</div>
+							<p>Yeni Rota Ekle</p>
+						</div>
+					</div>
+				` : ''}
 			</div>
 		</div>
 	`;
@@ -1082,16 +1077,16 @@ function addNewRoute() {
 	if (!currentTopic.routes) currentTopic.routes = [];
 	
 	const newRoute = {
-		title: `Yeni Rota ${currentTopic.routes.length + 1}`,
-		location: '',
+		title: `Rota ${currentTopic.routes.length + 1}`,
 		description: '',
-		photos: []
+		photos: [],
+		instagram: '',
+		mapAddress: ''
 	};
 	
 	currentTopic.routes.push(newRoute);
 	saveData();
 	updateNextDatePage();
-	alert('Yeni rota eklendi!');
 }
 
 // Rotayı sil
@@ -1135,6 +1130,28 @@ function deleteRoutePhoto(routeIndex, photoIndex) {
 		saveData();
 		updateNextDatePage();
 	}
+}
+
+// Rota Instagram adresini güncelle
+function updateRouteInstagram(routeIndex, newInstagram) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	currentTopic.routes[routeIndex].instagram = newInstagram;
+	saveData();
+}
+
+// Rota Map adresini güncelle
+function updateRouteMap(routeIndex, newMapAddress) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	currentTopic.routes[routeIndex].mapAddress = newMapAddress;
+	saveData();
 }
 
 // Slide navigasyon fonksiyonları
