@@ -315,85 +315,47 @@ function updateNextDatePage() {
 		minute: '2-digit'
 	};
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	
-	if (!currentTopic || !currentTopic.slides || currentTopic.slides.length === 0) {
-		container.innerHTML = `
-			<div class="next-date-card">
-				<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
-				<p class="location">📍 ${currentDate.location}</p>
-				<div class="preview-section">
-					<h4>Date Konusu</h4>
-					<p><strong>${currentTopic ? currentTopic.title : currentDate.topic}</strong></p>
-					<p>${currentTopic ? currentTopic.description : 'Özel date'}</p>
-				</div>
-				<p class="no-slides">Henüz slide bilgisi eklenmemiş.</p>
-			</div>
-		`;
-		return;
-	}
-	
 	container.innerHTML = `
 		<div class="next-date-card">
 			<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
-			<p class="location">📍 ${currentDate.location}</p>
 			
-			<div class="date-preview">
-				<div class="preview-section">
-					<h4>Date Konusu</h4>
-					<p><strong>${currentTopic.title}</strong></p>
-					<p>${currentTopic.description}</p>
+			<div class="date-info-section">
+				<div class="info-item">
+					<h4>📍 Konum</h4>
+					<p id="date-location">${currentDate.location}</p>
+					<button class="btn btn-small btn-secondary" onclick="editDateLocation()">Düzenle</button>
 				</div>
-			</div>
-			
-			<div class="slides-container">
-				<h4>📸 Date Detayları</h4>
-				<div class="slides-slider">
-					<div class="slide-navigation">
-						<button class="slide-nav-btn prev" onclick="changeSlide(-1)">‹</button>
-						<span class="slide-counter">
-							<span id="current-slide">1</span> / ${currentTopic.slides.length}
-						</span>
-						<button class="slide-nav-btn next" onclick="changeSlide(1)">›</button>
-					</div>
-					
-					<div class="slides-content" id="slides-content">
-						${currentTopic.slides.map((slide, index) => `
-							<div class="slide-item ${index === 0 ? 'active' : ''}" data-slide="${index}">
-								<div class="slide-header">
-									<h5>${slide.title}</h5>
-								</div>
-								<div class="slide-info">
-									<p><strong>📝 Açıklama:</strong> ${slide.description}</p>
-								</div>
-								${slide.photos && slide.photos.length > 0 ? `
-									<div class="slide-photos">
-										<div class="photos-grid-slide">
-											${slide.photos.map(photo => `
-												<div class="photo-item-slide">
-													<img src="${photo}" alt="Slide fotoğrafı" />
-												</div>
-											`).join('')}
-										</div>
+				
+				<div class="info-item">
+					<h4>📝 Açıklama</h4>
+					<p id="date-description">${currentDate.description || 'Henüz açıklama eklenmemiş.'}</p>
+					<button class="btn btn-small btn-secondary" onclick="editDateDescription()">Düzenle</button>
+				</div>
+				
+				<div class="info-item">
+					<h4>🕐 Saat</h4>
+					<p id="date-time">${date.toTimeString().slice(0, 5)}</p>
+					<button class="btn btn-small btn-secondary" onclick="editDateTime()">Düzenle</button>
+				</div>
+				
+				<div class="info-item">
+					<h4>📸 Görseller</h4>
+					<div class="date-photos" id="date-photos">
+						${currentDate.photos && currentDate.photos.length > 0 ? `
+							<div class="photos-grid-date">
+								${currentDate.photos.map(photo => `
+									<div class="photo-item-date">
+										<img src="${photo}" alt="Date fotoğrafı" />
 									</div>
-								` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
+								`).join('')}
 							</div>
-						`).join('')}
+						` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
 					</div>
-					
-					<div class="slide-dots">
-						${currentTopic.slides.map((_, index) => `
-							<button class="slide-dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></button>
-						`).join('')}
-					</div>
+					<button class="btn btn-small btn-primary" onclick="addDatePhotos()">Görsel Ekle</button>
 				</div>
 			</div>
 		</div>
 	`;
-	
-	// Global slide state
-	window.currentSlideIndex = 0;
-	window.totalSlides = currentTopic.slides.length;
 }
 
 // Kilitli date'ler sayfasını güncelle
@@ -833,8 +795,40 @@ function previewLocation(topicId) {
 	document.body.appendChild(modal);
 }
 
-// Sonraki date saati düzenle
-function editNextDateTime() {
+// Date konumunu düzenle
+function editDateLocation() {
+	if (!currentDate) {
+		alert('Aktif date bulunmuyor.');
+		return;
+	}
+	
+	const newLocation = prompt('Yeni konum:', currentDate.location);
+	if (!newLocation) return;
+	
+	currentDate.location = newLocation;
+	saveData();
+	updateNextDatePage();
+	alert('Konum güncellendi!');
+}
+
+// Date açıklamasını düzenle
+function editDateDescription() {
+	if (!currentDate) {
+		alert('Aktif date bulunmuyor.');
+		return;
+	}
+	
+	const newDescription = prompt('Yeni açıklama:', currentDate.description || '');
+	if (newDescription === null) return;
+	
+	currentDate.description = newDescription;
+	saveData();
+	updateNextDatePage();
+	alert('Açıklama güncellendi!');
+}
+
+// Date saatini düzenle
+function editDateTime() {
 	if (!currentDate) {
 		alert('Aktif date bulunmuyor.');
 		return;
@@ -859,8 +853,38 @@ function editNextDateTime() {
 	
 	currentDate.dateTime = newDateTime.toISOString();
 	saveData();
+	updateNextDatePage();
 	updateHomePage();
 	alert('Date saati güncellendi!');
+}
+
+// Date görselleri ekle
+function addDatePhotos() {
+	if (!currentDate) {
+		alert('Aktif date bulunmuyor.');
+		return;
+	}
+	
+	const input = document.createElement('input');
+	input.type = 'file';
+	input.accept = 'image/*';
+	input.multiple = true;
+	
+	input.onchange = function(e) {
+		const files = Array.from(e.target.files);
+		files.forEach(file => {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				if (!currentDate.photos) currentDate.photos = [];
+				currentDate.photos.push(e.target.result);
+				saveData();
+				updateNextDatePage();
+			};
+			reader.readAsDataURL(file);
+		});
+	};
+	
+	input.click();
 }
 
 // Slide navigasyon fonksiyonları
