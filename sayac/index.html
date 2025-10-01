@@ -3,50 +3,156 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Geri Sayım - Hatunumla Buluşma</title>
+	<title>Date Oyunu - Hatunumla Buluşmalar</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" href="./styles.css" />
-	<meta name="description" content="Hatunumla buluşmaya kalan süre için romantik ve sade geri sayım." />
+	<meta name="description" content="Hatunumla romantik date deneyimi - sayac, fotoğraflar ve gelecek buluşmalar." />
 </head>
 <body>
 	<main class="page">
-		<section class="container" aria-live="polite" aria-atomic="true">
-			<div class="heart" aria-hidden="true">❤</div>
-			<h1 class="title">Hatunumla buluşmaya kalan süre:</h1>
-			<p class="subtitle">Hedef: 29 Eylül 2025 Pazartesi 15:00 (İstanbul)</p>
-
-			<div class="countdown" role="timer" aria-label="Geri sayım">
-				<div class="slot">
-					<div class="value" id="days">0</div>
-					<div class="label">gün</div>
-				</div>
-				<div class="sep">:</div>
-				<div class="slot">
-					<div class="value" id="hours">0</div>
-					<div class="label">saat</div>
-				</div>
-				<div class="sep">:</div>
-				<div class="slot">
-					<div class="value" id="minutes">0</div>
-					<div class="label">dakika</div>
-				</div>
-				<div class="sep">:</div>
-				<div class="slot">
-					<div class="value" id="seconds">0</div>
-					<div class="label">saniye</div>
+		<!-- Navigation -->
+		<nav class="nav">
+			<div class="nav-container">
+				<h2 class="nav-title">Date Oyunu</h2>
+				<div class="nav-links">
+					<button class="nav-link active" data-page="home">Ana Sayfa</button>
+					<button class="nav-link" data-page="completed">Geçmiş Date'ler</button>
+					<button class="nav-link" data-page="next">Sonraki Date</button>
+					<button class="nav-link" data-page="locked">Kilitli Date'ler</button>
 				</div>
 			</div>
+		</nav>
 
-			<p class="note" id="doneText" hidden>Buluşma zamanı geldi! ❤</p>
+		<!-- Home Page -->
+		<section class="container active" id="home-page">
+			<div class="heart" aria-hidden="true">❤</div>
+			
+			<div id="date-counter-section" style="display: none;">
+				<h1 class="title">Sonraki date'e kalan süre:</h1>
+				<p class="subtitle" id="next-date-info">Hedef tarih yükleniyor...</p>
+
+				<div class="countdown" role="timer" aria-label="Geri sayım">
+					<div class="slot">
+						<div class="value" id="days">0</div>
+						<div class="label">gün</div>
+					</div>
+					<div class="sep">:</div>
+					<div class="slot">
+						<div class="value" id="hours">0</div>
+						<div class="label">saat</div>
+					</div>
+					<div class="sep">:</div>
+					<div class="slot">
+						<div class="value" id="minutes">0</div>
+						<div class="label">dakika</div>
+					</div>
+					<div class="sep">:</div>
+					<div class="slot">
+						<div class="value" id="seconds">0</div>
+						<div class="label">saniye</div>
+					</div>
+				</div>
+
+				<p class="note" id="doneText" hidden>Date zamanı geldi! ❤</p>
+			</div>
+
+			<div id="no-date-section" style="display: block;">
+				<h1 class="title">Date Oyunu</h1>
+				<div class="no-date-card">
+					<div class="no-date-icon">📅</div>
+					<h3>Lütfen müsait olduğunuz date gününü seçiniz hanımefendi</h3>
+					<p>Yeni bir date oluşturmak için aşağıdaki butona tıklayın.</p>
+					<button class="btn btn-primary" onclick="showPage('create-date')">
+						Date Oluştur
+					</button>
+				</div>
+			</div>
 		</section>
 
-		<section class="fun" aria-labelledby="fun-title">
-			<h2 id="fun-title">Karımı görmediğim zaman ben:</h2>
-			<video class="fun-video" src="./bagirma.mp4" controls preload="metadata" playsinline muted></video>
+		<!-- Create Date Page -->
+		<section class="container" id="create-date-page" style="display: none;">
+			<h1 class="title">Yeni Date Oluştur</h1>
+			
+			<div class="create-date-form">
+				<div class="form-group">
+					<label for="date-input">Tarih:</label>
+					<input type="date" id="date-input" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="time-input">Saat:</label>
+					<input type="time" id="time-input" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="location-input">Yer (opsiyonel):</label>
+					<input type="text" id="location-input" placeholder="Örn: İstiklal Caddesi, Galata Kulesi">
+				</div>
+				
+				<div class="form-actions">
+					<button class="btn btn-secondary" onclick="showPage('home')">İptal</button>
+					<button class="btn btn-primary" onclick="createDate()">Date Oluştur</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Completed Dates Page -->
+		<section class="container" id="completed-page" style="display: none;">
+			<h1 class="title">Geçmiş Date'ler</h1>
+			<div id="completed-dates-list">
+				<div class="no-content">
+					<p>Henüz tamamlanan date bulunmuyor.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Next Date Page -->
+		<section class="container" id="next-page" style="display: none;">
+			<h1 class="title">Sonraki Date</h1>
+			<div id="next-date-content">
+				<div class="no-content">
+					<p>Henüz bir date planlanmamış.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Locked Dates Page -->
+		<section class="container" id="locked-page" style="display: none;">
+			<h1 class="title">Kilitli Date'ler</h1>
+			<div class="locked-dates-grid">
+				<div class="locked-date-card">
+					<div class="locked-icon">🔒</div>
+					<h3>Romantik Akşam Yemeği</h3>
+					<p>Özel bir restoranda romantik akşam yemeği</p>
+					<div class="lock-level">Level 2</div>
+				</div>
+				
+				<div class="locked-date-card">
+					<div class="locked-icon">🔒</div>
+					<h3>Doğa Yürüyüşü</h3>
+					<p>Şehirden uzakta doğal bir yürüyüş</p>
+					<div class="lock-level">Level 3</div>
+				</div>
+				
+				<div class="locked-date-card">
+					<div class="locked-icon">🔒</div>
+					<h3>Müze Turu</h3>
+					<p>Kültürel bir müze gezisi</p>
+					<div class="lock-level">Level 4</div>
+				</div>
+				
+				<div class="locked-date-card">
+					<div class="locked-icon">🔒</div>
+					<h3>Gizli Sürpriz</h3>
+					<p>Ne olduğu bilinmeyen özel sürpriz</p>
+					<div class="lock-level">Level 5</div>
+				</div>
+			</div>
 		</section>
 	</main>
+	
 	<script src="./script.js"></script>
 </body>
-</html> 
+</html>
