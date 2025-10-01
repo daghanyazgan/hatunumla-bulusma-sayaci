@@ -1,11 +1,60 @@
 // Date yönetimi ve sayfa geçişleri
 let currentDate = null;
 let completedDates = [];
+let dateTopics = [];
+let adminPassword = 'admin123'; // Varsayılan şifre
+let isAdminLoggedIn = false;
+
+// Varsayılan date konuları
+const defaultDateTopics = [
+	{
+		id: '1',
+		title: 'Romantik Akşam Yemeği',
+		description: 'Özel bir restoranda romantik akşam yemeği',
+		location: 'Merkezi restoran',
+		activities: ['Yemek yeme', 'Şarap içme', 'Konuşma'],
+		level: 2,
+		unlockCondition: 'İlk date tamamlandıktan sonra',
+		isActive: true
+	},
+	{
+		id: '2',
+		title: 'Doğa Yürüyüşü',
+		description: 'Şehirden uzakta doğal bir yürüyüş',
+		location: 'Milli park',
+		activities: ['Yürüyüş', 'Fotoğraf çekme', 'Piknik'],
+		level: 3,
+		unlockCondition: '2 date tamamlandıktan sonra',
+		isActive: false
+	},
+	{
+		id: '3',
+		title: 'Müze Turu',
+		description: 'Kültürel bir müze gezisi',
+		location: 'Tarihi müze',
+		activities: ['Müze gezisi', 'Kültürel keşif', 'Öğrenme'],
+		level: 4,
+		unlockCondition: '3 date tamamlandıktan sonra',
+		isActive: false
+	},
+	{
+		id: '4',
+		title: 'Gizli Sürpriz',
+		description: 'Ne olduğu bilinmeyen özel sürpriz',
+		location: 'Gizli lokasyon',
+		activities: ['Sürpriz aktivite'],
+		level: 5,
+		unlockCondition: '4 date tamamlandıktan sonra',
+		isActive: false
+	}
+];
 
 // LocalStorage'dan verileri yükle
 function loadData() {
 	const savedDate = localStorage.getItem('currentDate');
 	const savedCompleted = localStorage.getItem('completedDates');
+	const savedTopics = localStorage.getItem('dateTopics');
+	const savedPassword = localStorage.getItem('adminPassword');
 	
 	if (savedDate) {
 		currentDate = JSON.parse(savedDate);
@@ -13,6 +62,16 @@ function loadData() {
 	
 	if (savedCompleted) {
 		completedDates = JSON.parse(savedCompleted);
+	}
+	
+	if (savedTopics) {
+		dateTopics = JSON.parse(savedTopics);
+	} else {
+		dateTopics = [...defaultDateTopics];
+	}
+	
+	if (savedPassword) {
+		adminPassword = savedPassword;
 	}
 }
 
@@ -22,6 +81,8 @@ function saveData() {
 		localStorage.setItem('currentDate', JSON.stringify(currentDate));
 	}
 	localStorage.setItem('completedDates', JSON.stringify(completedDates));
+	localStorage.setItem('dateTopics', JSON.stringify(dateTopics));
+	localStorage.setItem('adminPassword', adminPassword);
 }
 
 // Sayfa göster
@@ -57,6 +118,17 @@ function showPage(pageId) {
 		updateCompletedPage();
 	} else if (pageId === 'next') {
 		updateNextDatePage();
+	} else if (pageId === 'locked') {
+		updateLockedDatesPage();
+	} else if (pageId === 'admin') {
+		if (!isAdminLoggedIn) {
+			document.getElementById('admin-login').style.display = 'block';
+			document.getElementById('admin-content').style.display = 'none';
+		} else {
+			updateAdminPages();
+		}
+	} else if (pageId === 'create-date') {
+		updateNextDatePreview();
 	}
 }
 
@@ -79,25 +151,32 @@ function updateHomePage() {
 
 // Date oluştur
 function createDate() {
-	const dateInput = document.getElementById('date-input').value;
 	const timeInput = document.getElementById('time-input').value;
-	const locationInput = document.getElementById('location-input').value;
 	
-	if (!dateInput || !timeInput) {
-		alert('Lütfen tarih ve saat seçiniz.');
+	if (!timeInput) {
+		alert('Lütfen saat seçiniz.');
 		return;
 	}
 	
-	const dateTime = new Date(dateInput + 'T' + timeInput);
-	
-	if (dateTime <= new Date()) {
-		alert('Gelecek bir tarih seçiniz.');
+	// Sonraki aktif date konusunu bul
+	const nextTopic = dateTopics.find(topic => topic.isActive && !currentDate);
+	if (!nextTopic) {
+		alert('Henüz aktif date konusu bulunmuyor. Admin panelinden date konularını ayarlayın.');
 		return;
 	}
+	
+	// Bugünden sonraki ilk uygun tarihi bul
+	const today = new Date();
+	const tomorrow = new Date(today);
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	
+	const [hours, minutes] = timeInput.split(':');
+	tomorrow.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 	
 	currentDate = {
-		dateTime: dateTime.toISOString(),
-		location: locationInput || 'Belirtilmemiş',
+		dateTime: tomorrow.toISOString(),
+		location: nextTopic.location,
+		topic: nextTopic.title,
 		created: new Date().toISOString()
 	};
 	
@@ -197,6 +276,8 @@ function updateNextDatePage() {
 		minute: '2-digit'
 	};
 	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	
 	container.innerHTML = `
 		<div class="next-date-card">
 			<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
@@ -204,8 +285,14 @@ function updateNextDatePage() {
 			
 			<div class="date-preview">
 				<div class="preview-section">
-					<h4>Planlanan Aktivite</h4>
-					<p>Romantik bir akşam geçireceğiz. Detaylar sürpriz! 😊</p>
+					<h4>Date Konusu</h4>
+					<p><strong>${currentTopic ? currentTopic.title : currentDate.topic}</strong></p>
+					<p>${currentTopic ? currentTopic.description : 'Özel date'}</p>
+				</div>
+				
+				<div class="preview-section">
+					<h4>Planlanan Aktiviteler</h4>
+					<p>${currentTopic ? currentTopic.activities.join(', ') : 'Sürpriz aktiviteler'}</p>
 				</div>
 				
 				<div class="preview-section">
@@ -223,6 +310,33 @@ function updateNextDatePage() {
 			</div>
 		</div>
 	`;
+}
+
+// Kilitli date'ler sayfasını güncelle
+function updateLockedDatesPage() {
+	const container = document.getElementById('locked-dates-container');
+	
+	const lockedTopics = dateTopics.filter(topic => !topic.isActive);
+	
+	if (lockedTopics.length === 0) {
+		container.innerHTML = '<div class="no-content"><p>Tüm date\'ler açık! 🎉</p></div>';
+		return;
+	}
+	
+	container.innerHTML = lockedTopics.map(topic => `
+		<div class="locked-date-card">
+			<div class="locked-icon">🔒</div>
+			<h3>Gizli Date</h3>
+			<p>Bu date konusu henüz kilitli. ${topic.unlockCondition} açılacak.</p>
+			<div class="lock-level">Level ${topic.level}</div>
+			<div class="unlock-progress">
+				<div class="progress-bar">
+					<div class="progress-fill" style="width: ${Math.min(100, (completedDates.length / (topic.level - 1)) * 100)}%"></div>
+				</div>
+				<small>${completedDates.length}/${topic.level - 1} date tamamlandı</small>
+			</div>
+		</div>
+	`).join('');
 }
 
 // Fotoğraf ekle
@@ -260,14 +374,306 @@ function completeDate() {
 		id: Date.now().toString(),
 		dateTime: currentDate.dateTime,
 		location: currentDate.location,
+		topic: currentDate.topic || 'Özel Date',
 		completed: new Date().toISOString(),
 		photos: []
 	};
 	
 	completedDates.unshift(completedDate);
 	currentDate = null;
+	
+	// Date konularını güncelle (kilitleri aç)
+	updateDateTopicsUnlock();
+	
 	saveData();
 	updateHomePage();
+}
+
+// Date konularının kilit durumunu güncelle
+function updateDateTopicsUnlock() {
+	const completedCount = completedDates.length;
+	
+	dateTopics.forEach(topic => {
+		if (completedCount >= topic.level - 1) {
+			topic.isActive = true;
+		}
+	});
+	
+	saveData();
+}
+
+// Admin girişi
+function adminLogin() {
+	const password = document.getElementById('admin-password').value;
+	
+	if (password === adminPassword) {
+		isAdminLoggedIn = true;
+		document.getElementById('admin-login').style.display = 'none';
+		document.getElementById('admin-content').style.display = 'block';
+		document.querySelector('.admin-only').style.display = 'inline-flex';
+		updateAdminPages();
+	} else {
+		alert('Yanlış şifre!');
+	}
+}
+
+// Admin sayfalarını güncelle
+function updateAdminPages() {
+	updateDateTopicsList();
+	updateLockedDatesPage();
+}
+
+// Date konuları listesini güncelle
+function updateDateTopicsList() {
+	const container = document.getElementById('date-topics-list');
+	
+	container.innerHTML = dateTopics.map(topic => `
+		<div class="date-topic-card">
+			<div class="date-topic-header">
+				<h4>${topic.title}</h4>
+				<span class="topic-level">Level ${topic.level}</span>
+			</div>
+			<div class="topic-details">
+				<p><strong>Konum:</strong> ${topic.location}</p>
+				<p><strong>Açıklama:</strong> ${topic.description}</p>
+				<p><strong>Aktiviteler:</strong> ${topic.activities.join(', ')}</p>
+				<p><strong>Kilit Koşulu:</strong> ${topic.unlockCondition}</p>
+				<p><strong>Durum:</strong> ${topic.isActive ? '✅ Aktif' : '🔒 Kilitli'}</p>
+			</div>
+			<div class="topic-actions">
+				<button class="btn btn-small btn-secondary" onclick="editDateTopic('${topic.id}')">Düzenle</button>
+				<button class="btn btn-small btn-danger" onclick="deleteDateTopic('${topic.id}')">Sil</button>
+			</div>
+		</div>
+	`).join('');
+}
+
+// Yeni date konusu ekle
+function addNewDateTopic() {
+	const title = prompt('Date konusu başlığı:');
+	if (!title) return;
+	
+	const description = prompt('Açıklama:');
+	const location = prompt('Konum:');
+	const activities = prompt('Aktiviteler (virgülle ayırın):').split(',').map(a => a.trim());
+	const level = parseInt(prompt('Level (1-10):'));
+	
+	if (!level || level < 1 || level > 10) {
+		alert('Geçerli bir level girin (1-10)');
+		return;
+	}
+	
+	const newTopic = {
+		id: Date.now().toString(),
+		title,
+		description,
+		location,
+		activities,
+		level,
+		unlockCondition: `${level - 1} date tamamlandıktan sonra`,
+		isActive: completedDates.length >= level - 1
+	};
+	
+	dateTopics.push(newTopic);
+	saveData();
+	updateAdminPages();
+}
+
+// Date konusu düzenle
+function editDateTopic(id) {
+	const topic = dateTopics.find(t => t.id === id);
+	if (!topic) return;
+	
+	const title = prompt('Başlık:', topic.title);
+	if (!title) return;
+	
+	topic.title = title;
+	topic.description = prompt('Açıklama:', topic.description) || topic.description;
+	topic.location = prompt('Konum:', topic.location) || topic.location;
+	topic.activities = prompt('Aktiviteler (virgülle ayırın):', topic.activities.join(', ')).split(',').map(a => a.trim());
+	
+	saveData();
+	updateAdminPages();
+}
+
+// Date konusu sil
+function deleteDateTopic(id) {
+	if (confirm('Bu date konusunu silmek istediğinizden emin misiniz?')) {
+		dateTopics = dateTopics.filter(t => t.id !== id);
+		saveData();
+		updateAdminPages();
+	}
+}
+
+// Geçmiş date ekle
+function addPastDate() {
+	const date = document.getElementById('past-date-date').value;
+	const time = document.getElementById('past-date-time').value;
+	const topic = document.getElementById('past-date-topic').value;
+	const location = document.getElementById('past-date-location').value;
+	const photosInput = document.getElementById('past-date-photos');
+	
+	if (!date || !time || !topic || !location) {
+		alert('Lütfen tüm alanları doldurun.');
+		return;
+	}
+	
+	const dateTime = new Date(date + 'T' + time);
+	
+	if (dateTime > new Date()) {
+		alert('Geçmiş bir tarih seçin.');
+		return;
+	}
+	
+	const photos = [];
+	if (photosInput.files.length > 0) {
+		for (let i = 0; i < photosInput.files.length; i++) {
+			const file = photosInput.files[i];
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				photos.push(e.target.result);
+				if (photos.length === photosInput.files.length) {
+					completePastDate(dateTime, topic, location, photos);
+				}
+			};
+			reader.readAsDataURL(file);
+		}
+	} else {
+		completePastDate(dateTime, topic, location, photos);
+	}
+}
+
+function completePastDate(dateTime, topic, location, photos) {
+	const pastDate = {
+		id: Date.now().toString(),
+		dateTime: dateTime.toISOString(),
+		location,
+		topic,
+		completed: new Date().toISOString(),
+		photos
+	};
+	
+	completedDates.unshift(pastDate);
+	
+	// Formu temizle
+	document.getElementById('past-date-date').value = '';
+	document.getElementById('past-date-time').value = '';
+	document.getElementById('past-date-topic').value = '';
+	document.getElementById('past-date-location').value = '';
+	document.getElementById('past-date-photos').value = '';
+	
+	// Date konularını güncelle
+	updateDateTopicsUnlock();
+	
+	saveData();
+	updateAdminPages();
+	alert('Geçmiş date başarıyla eklendi!');
+}
+
+// Admin şifre değiştir
+function changeAdminPassword() {
+	const newPassword = document.getElementById('new-admin-password').value;
+	if (!newPassword) {
+		alert('Yeni şifre girin.');
+		return;
+	}
+	
+	adminPassword = newPassword;
+	document.getElementById('new-admin-password').value = '';
+	saveData();
+	alert('Şifre başarıyla değiştirildi!');
+}
+
+// Tüm verileri temizle
+function clearAllData() {
+	if (confirm('TÜM VERİLER SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?')) {
+		localStorage.clear();
+		currentDate = null;
+		completedDates = [];
+		dateTopics = [...defaultDateTopics];
+		adminPassword = 'admin123';
+		isAdminLoggedIn = false;
+		saveData();
+		location.reload();
+	}
+}
+
+// Verileri dışa aktar
+function exportData() {
+	const data = {
+		currentDate,
+		completedDates,
+		dateTopics,
+		adminPassword,
+		exportDate: new Date().toISOString()
+	};
+	
+	const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = `date-game-backup-${new Date().toISOString().split('T')[0]}.json`;
+	a.click();
+	URL.revokeObjectURL(url);
+}
+
+// Verileri içe aktar
+function importData(input) {
+	const file = input.files[0];
+	if (!file) return;
+	
+	const reader = new FileReader();
+	reader.onload = function(e) {
+		try {
+			const data = JSON.parse(e.target.result);
+			
+			if (data.currentDate) currentDate = data.currentDate;
+			if (data.completedDates) completedDates = data.completedDates;
+			if (data.dateTopics) dateTopics = data.dateTopics;
+			if (data.adminPassword) adminPassword = data.adminPassword;
+			
+			saveData();
+			updateHomePage();
+			updateAdminPages();
+			alert('Veriler başarıyla içe aktarıldı!');
+		} catch (error) {
+			alert('Dosya formatı hatalı!');
+		}
+	};
+	reader.readAsText(file);
+}
+
+// Sonraki date önizlemesini güncelle
+function updateNextDatePreview() {
+	const container = document.getElementById('next-date-preview');
+	
+	const nextTopic = dateTopics.find(topic => topic.isActive && !currentDate);
+	if (!nextTopic) {
+		container.innerHTML = '<p>Henüz aktif date konusu bulunmuyor.</p>';
+		return;
+	}
+	
+	container.innerHTML = `
+		<h4>${nextTopic.title}</h4>
+		<p><strong>Konum:</strong> ${nextTopic.location}</p>
+		<p><strong>Açıklama:</strong> ${nextTopic.description}</p>
+		<p><strong>Aktiviteler:</strong> ${nextTopic.activities.join(', ')}</p>
+	`;
+}
+
+// Admin tab değiştir
+function switchAdminTab(tabId) {
+	// Tüm tab'ları pasif yap
+	document.querySelectorAll('.admin-tab').forEach(tab => {
+		tab.classList.remove('active');
+	});
+	document.querySelectorAll('.admin-tab-content').forEach(content => {
+		content.classList.remove('active');
+	});
+	
+	// Seçilen tab'ı aktif yap
+	document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+	document.getElementById(`tab-${tabId}`).classList.add('active');
 }
 
 // Nav link event listeners
@@ -283,8 +689,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	});
 	
+	// Admin tab'larını ayarla
+	document.querySelectorAll('.admin-tab').forEach(tab => {
+		tab.addEventListener('click', function() {
+			const tabId = this.getAttribute('data-tab');
+			switchAdminTab(tabId);
+		});
+	});
+	
 	// Ana sayfayı güncelle
 	updateHomePage();
+	
+	// Date konularının kilit durumunu güncelle
+	updateDateTopicsUnlock();
 	
 	// Geri sayım interval'ı
 	setInterval(() => {
@@ -295,11 +712,4 @@ document.addEventListener('DOMContentLoaded', function() {
 			completeDate();
 		}
 	}, 1000);
-	
-	// Date input'larını bugünden sonrasına sınırla
-	const dateInput = document.getElementById('date-input');
-	if (dateInput) {
-		const today = new Date().toISOString().split('T')[0];
-		dateInput.min = today;
-	}
 });
