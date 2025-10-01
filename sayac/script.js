@@ -325,13 +325,16 @@ function updateNextDatePage() {
 		minute: '2-digit'
 	};
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	// Eğer currentDate'te routes yoksa, oluştur
+	if (!currentDate.routes) {
+		currentDate.routes = [];
+	}
 	
-	if (!currentTopic || !currentTopic.routes || currentTopic.routes.length === 0) {
+	if (!currentDate.routes || currentDate.routes.length === 0) {
 		container.innerHTML = `
 			<div class="next-date-card">
 				<div class="date-header">
-					<h2>${currentTopic ? currentTopic.title : currentDate.topic}</h2>
+					<h2>${currentDate.topic || 'Date Başlığı'}</h2>
 					<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
 				</div>
 				<div class="routes-container">
@@ -352,12 +355,12 @@ function updateNextDatePage() {
 	container.innerHTML = `
 		<div class="next-date-card">
 			<div class="date-header">
-				<h2>${currentTopic.title || 'Date Başlığı'}</h2>
+				<h2>${currentDate.topic || 'Date Başlığı'}</h2>
 				<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
 			</div>
 			
 			<div class="routes-container">
-				${currentTopic.routes.map((route, index) => `
+				${currentDate.routes.map((route, index) => `
 					<div class="route-card">
 						<div class="route-number">${index + 1}. Rota</div>
 						
@@ -443,7 +446,7 @@ function updateNextDatePage() {
 	`;
 	
 	// Slider state'lerini başlat
-	currentTopic.routes.forEach((_, index) => {
+	currentDate.routes.forEach((_, index) => {
 		window[`currentSlide_${index}`] = 0;
 	});
 }
@@ -953,34 +956,17 @@ function editDateTime() {
 	alert('Date saati güncellendi!');
 }
 
-// Rota konumunu güncelle
-function updateRouteLocation(routeIndex, newLocation) {
-	if (!currentDate) return;
-	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
-	
-	currentTopic.routes[routeIndex].location = newLocation;
-	saveData();
-}
-
 // Rota açıklamasını güncelle
 function updateRouteDescription(routeIndex, newDescription) {
-	if (!currentDate) return;
+	if (!currentDate || !currentDate.routes || !currentDate.routes[routeIndex]) return;
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
-	
-	currentTopic.routes[routeIndex].description = newDescription;
+	currentDate.routes[routeIndex].description = newDescription;
 	saveData();
 }
 
 // Rota görselleri ekle
 function addRoutePhotos(routeIndex) {
-	if (!currentDate) return;
-	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	if (!currentDate || !currentDate.routes || !currentDate.routes[routeIndex]) return;
 	
 	const input = document.createElement('input');
 	input.type = 'file';
@@ -992,8 +978,8 @@ function addRoutePhotos(routeIndex) {
 		files.forEach(file => {
 			const reader = new FileReader();
 			reader.onload = function(e) {
-				if (!currentTopic.routes[routeIndex].photos) currentTopic.routes[routeIndex].photos = [];
-				currentTopic.routes[routeIndex].photos.push(e.target.result);
+				if (!currentDate.routes[routeIndex].photos) currentDate.routes[routeIndex].photos = [];
+				currentDate.routes[routeIndex].photos.push(e.target.result);
 				saveData();
 				updateNextDatePage();
 			};
@@ -1077,68 +1063,32 @@ function updateDateDescription(newDescription) {
 
 // Yeni rota ekle
 function addNewRoute() {
-	console.log('addNewRoute çağrıldı');
-	console.log('currentDate:', currentDate);
-	console.log('dateTopics:', dateTopics);
-	
 	if (!currentDate) {
 		alert('Aktif date bulunamadı!');
 		return;
 	}
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	console.log('currentTopic:', currentTopic);
-	
-	if (!currentTopic) {
-		alert('Date konusu bulunamadı!');
-		return;
-	}
-	
-	if (!currentTopic.routes) currentTopic.routes = [];
+	if (!currentDate.routes) currentDate.routes = [];
 	
 	const newRoute = {
-		title: `Rota ${currentTopic.routes.length + 1}`,
+		title: `Rota ${currentDate.routes.length + 1}`,
 		description: '',
 		photos: [],
 		instagram: '',
 		mapAddress: ''
 	};
 	
-	console.log('Yeni rota ekleniyor:', newRoute);
-	
-	currentTopic.routes.push(newRoute);
-	console.log('Güncel routes:', currentTopic.routes);
-	
+	currentDate.routes.push(newRoute);
 	saveData();
 	updateNextDatePage();
-	
-	alert('Rota eklendi!');
 }
 
 // Rotayı sil
 function deleteRoute(routeIndex) {
-	if (!currentDate) return;
-	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes) return;
+	if (!currentDate || !currentDate.routes) return;
 	
 	if (confirm('Bu rotayı silmek istediğinizden emin misiniz?')) {
-		currentTopic.routes.splice(routeIndex, 1);
-		saveData();
-		updateNextDatePage();
-	}
-}
-
-// Rota başlığını düzenle
-function editRouteTitle(routeIndex) {
-	if (!currentDate) return;
-	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
-	
-	const newTitle = prompt('Yeni rota başlığı:', currentTopic.routes[routeIndex].title);
-	if (newTitle && newTitle.trim()) {
-		currentTopic.routes[routeIndex].title = newTitle.trim();
+		currentDate.routes.splice(routeIndex, 1);
 		saveData();
 		updateNextDatePage();
 	}
@@ -1146,13 +1096,10 @@ function editRouteTitle(routeIndex) {
 
 // Rota fotoğrafını sil
 function deleteRoutePhoto(routeIndex, photoIndex) {
-	if (!currentDate) return;
-	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	if (!currentDate || !currentDate.routes || !currentDate.routes[routeIndex]) return;
 	
 	if (confirm('Bu fotoğrafı silmek istediğinizden emin misiniz?')) {
-		currentTopic.routes[routeIndex].photos.splice(photoIndex, 1);
+		currentDate.routes[routeIndex].photos.splice(photoIndex, 1);
 		saveData();
 		updateNextDatePage();
 	}
@@ -1160,23 +1107,17 @@ function deleteRoutePhoto(routeIndex, photoIndex) {
 
 // Rota Instagram adresini güncelle
 function updateRouteInstagram(routeIndex, newInstagram) {
-	if (!currentDate) return;
+	if (!currentDate || !currentDate.routes || !currentDate.routes[routeIndex]) return;
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
-	
-	currentTopic.routes[routeIndex].instagram = newInstagram;
+	currentDate.routes[routeIndex].instagram = newInstagram;
 	saveData();
 }
 
 // Rota Map adresini güncelle
 function updateRouteMap(routeIndex, newMapAddress) {
-	if (!currentDate) return;
+	if (!currentDate || !currentDate.routes || !currentDate.routes[routeIndex]) return;
 	
-	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
-	
-	currentTopic.routes[routeIndex].mapAddress = newMapAddress;
+	currentDate.routes[routeIndex].mapAddress = newMapAddress;
 	saveData();
 }
 
