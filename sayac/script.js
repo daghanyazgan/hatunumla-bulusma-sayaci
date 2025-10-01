@@ -132,6 +132,14 @@ function showPage(pageId) {
 	}
 }
 
+// Hash tabanlı routing
+function handleHashRoute() {
+	const hash = (location.hash || '').replace('#', '').trim();
+	const valid = ['home','completed','next','locked','admin','create-date'];
+	const target = valid.includes(hash) ? hash : 'home';
+	showPage(target);
+}
+
 // Ana sayfayı güncelle
 function updateHomePage() {
 	const dateCounterSection = document.getElementById('date-counter-section');
@@ -439,9 +447,23 @@ function updateDateTopicsList() {
 				<p><strong>Aktiviteler:</strong> ${topic.activities.join(', ')}</p>
 				<p><strong>Kilit Koşulu:</strong> ${topic.unlockCondition}</p>
 				<p><strong>Durum:</strong> ${topic.isActive ? '✅ Aktif' : '🔒 Kilitli'}</p>
+				${topic.photos && topic.photos.length > 0 ? `
+					<div class="topic-photos">
+						<strong>Görseller:</strong>
+						<div class="photos-grid-small">
+							${topic.photos.map(photo => `
+								<div class="photo-item-small">
+									<img src="${photo}" alt="Konum fotoğrafı" />
+								</div>
+							`).join('')}
+						</div>
+					</div>
+				` : ''}
 			</div>
 			<div class="topic-actions">
-				<button class="btn btn-small btn-secondary" onclick="editDateTopic('${topic.id}')">Düzenle</button>
+				<button class="btn btn-small btn-primary" onclick="editDateTopic('${topic.id}')">Düzenle</button>
+				<button class="btn btn-small btn-secondary" onclick="addTopicPhotos('${topic.id}')">Görsel Ekle</button>
+				<button class="btn btn-small btn-info" onclick="previewLocation('${topic.id}')">Yeri İncele</button>
 				<button class="btn btn-small btn-danger" onclick="deleteDateTopic('${topic.id}')">Sil</button>
 			</div>
 		</div>
@@ -503,6 +525,107 @@ function deleteDateTopic(id) {
 		saveData();
 		updateAdminPages();
 	}
+}
+
+// Topic görselleri ekle
+function addTopicPhotos(topicId) {
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic) return;
+	
+	const input = document.createElement('input');
+	input.type = 'file';
+	input.accept = 'image/*';
+	input.multiple = true;
+	
+	input.onchange = function(e) {
+		const files = Array.from(e.target.files);
+		files.forEach(file => {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				if (!topic.photos) topic.photos = [];
+				topic.photos.push(e.target.result);
+				saveData();
+				updateAdminPages();
+			};
+			reader.readAsDataURL(file);
+		});
+	};
+	
+	input.click();
+}
+
+// Yeri önizle
+function previewLocation(topicId) {
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic) return;
+	
+	const modal = document.createElement('div');
+	modal.className = 'modal-overlay';
+	modal.innerHTML = `
+		<div class="modal-content location-preview">
+			<div class="modal-header">
+				<h3>📍 ${topic.title}</h3>
+				<button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+			</div>
+			<div class="modal-body">
+				<div class="location-info">
+					<p><strong>Konum:</strong> ${topic.location}</p>
+					<p><strong>Açıklama:</strong> ${topic.description}</p>
+					<p><strong>Aktiviteler:</strong> ${topic.activities.join(', ')}</p>
+					<p><strong>Level:</strong> ${topic.level}</p>
+					<p><strong>Durum:</strong> ${topic.isActive ? '✅ Aktif' : '🔒 Kilitli'}</p>
+				</div>
+				${topic.photos && topic.photos.length > 0 ? `
+					<div class="location-photos">
+						<h4>Görseller:</h4>
+						<div class="photos-grid-modal">
+							${topic.photos.map(photo => `
+								<div class="photo-item-modal">
+									<img src="${photo}" alt="Konum fotoğrafı" />
+								</div>
+							`).join('')}
+						</div>
+					</div>
+				` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Kapat</button>
+				<button class="btn btn-primary" onclick="editDateTopic('${topic.id}'); this.closest('.modal-overlay').remove();">Düzenle</button>
+			</div>
+		</div>
+	`;
+	
+	document.body.appendChild(modal);
+}
+
+// Sonraki date saati düzenle
+function editNextDateTime() {
+	if (!currentDate) {
+		alert('Aktif date bulunmuyor.');
+		return;
+	}
+	
+	const currentTime = new Date(currentDate.dateTime);
+	const timeString = currentTime.toTimeString().slice(0, 5);
+	const newTime = prompt('Yeni saat (HH:MM):', timeString);
+	
+	if (!newTime) return;
+	
+	// Saat formatını kontrol et
+	const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+	if (!timeRegex.test(newTime)) {
+		alert('Geçerli bir saat formatı girin (HH:MM)');
+		return;
+	}
+	
+	const [hours, minutes] = newTime.split(':');
+	const newDateTime = new Date(currentDate.dateTime);
+	newDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+	
+	currentDate.dateTime = newDateTime.toISOString();
+	saveData();
+	updateHomePage();
+	alert('Date saati güncellendi!');
 }
 
 // Geçmiş date ekle
@@ -686,6 +809,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		link.addEventListener('click', function() {
 			const pageId = this.getAttribute('data-page');
 			showPage(pageId);
+			// Hash'i güncelle
+			location.hash = pageId;
 		});
 	});
 	
@@ -697,8 +822,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	});
 	
-	// Ana sayfayı güncelle
-	updateHomePage();
+	// İlk yüklemede hash'e göre göster
+	handleHashRoute();
+	
+	// Hash değişimlerinde sayfa değiştir
+	window.addEventListener('hashchange', handleHashRoute);
 	
 	// Date konularının kilit durumunu güncelle
 	updateDateTopicsUnlock();

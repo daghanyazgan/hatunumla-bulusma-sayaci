@@ -538,6 +538,149 @@ body {
 	font-size: 11px;
 }
 
+/* Topic Photos */
+.topic-photos {
+	margin-top: 12px;
+}
+
+.photos-grid-small {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.photo-item-small {
+	aspect-ratio: 1;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 2px solid var(--border);
+}
+
+.photo-item-small img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Modal */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 16px;
+	max-width: 600px;
+	max-height: 80vh;
+	overflow-y: auto;
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+	margin: 0;
+	color: var(--accent);
+}
+
+.modal-close {
+	background: none;
+	border: none;
+	font-size: 24px;
+	color: var(--muted);
+	cursor: pointer;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+	background: var(--background);
+	color: var(--accent);
+}
+
+.modal-body {
+	padding: 24px;
+}
+
+.modal-footer {
+	padding: 20px 24px;
+	border-top: 1px solid var(--border);
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+}
+
+/* Location Preview */
+.location-info {
+	margin-bottom: 20px;
+}
+
+.location-info p {
+	margin: 8px 0;
+	color: var(--text);
+}
+
+.location-photos h4 {
+	margin: 16px 0 12px 0;
+	color: var(--accent);
+}
+
+.photos-grid-modal {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 12px;
+}
+
+.photo-item-modal {
+	aspect-ratio: 1;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 2px solid var(--border);
+	transition: transform 0.2s ease;
+}
+
+.photo-item-modal:hover {
+	transform: scale(1.05);
+}
+
+.photo-item-modal img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Button Variants */
+.btn-info {
+	background: linear-gradient(135deg, #0ea5e9, #0284c7);
+	color: white;
+}
+
+.btn-info:hover {
+	background: linear-gradient(135deg, #0284c7, #0369a1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
 	.nav-container {
