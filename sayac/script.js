@@ -323,19 +323,19 @@ function updateNextDatePage() {
 				<div class="info-item">
 					<h4>📍 Konum</h4>
 					<p id="date-location">${currentDate.location}</p>
-					<button class="btn btn-small btn-secondary" onclick="editDateLocation()">Düzenle</button>
+					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateLocation()">Düzenle</button>' : ''}
 				</div>
 				
 				<div class="info-item">
 					<h4>📝 Açıklama</h4>
 					<p id="date-description">${currentDate.description || 'Henüz açıklama eklenmemiş.'}</p>
-					<button class="btn btn-small btn-secondary" onclick="editDateDescription()">Düzenle</button>
+					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateDescription()">Düzenle</button>' : ''}
 				</div>
 				
 				<div class="info-item">
 					<h4>🕐 Saat</h4>
 					<p id="date-time">${date.toTimeString().slice(0, 5)}</p>
-					<button class="btn btn-small btn-secondary" onclick="editDateTime()">Düzenle</button>
+					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateTime()">Düzenle</button>' : ''}
 				</div>
 				
 				<div class="info-item">
@@ -351,7 +351,7 @@ function updateNextDatePage() {
 							</div>
 						` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
 					</div>
-					<button class="btn btn-small btn-primary" onclick="addDatePhotos()">Görsel Ekle</button>
+					${isAdminLoggedIn ? '<button class="btn btn-small btn-primary" onclick="addDatePhotos()">Görsel Ekle</button>' : ''}
 				</div>
 			</div>
 		</div>
@@ -458,6 +458,11 @@ function adminLogin() {
 		document.getElementById('admin-content').style.display = 'block';
 		document.querySelector('.admin-only').style.display = 'inline-flex';
 		updateAdminPages();
+		
+		// Eğer şu anda sonraki date sayfasındaysak, düzenleme butonlarını göster
+		if (document.getElementById('next-page').style.display === 'block') {
+			updateNextDatePage();
+		}
 	} else {
 		alert('Yanlış şifre!');
 	}
