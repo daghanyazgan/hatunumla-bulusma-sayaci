@@ -681,12 +681,12 @@ body {
 	background: linear-gradient(135deg, #0284c7, #0369a1);
 }
 
-/* Routes Slider */
-.routes-container {
+/* Slides Slider */
+.slides-container {
 	margin-top: 24px;
 }
 
-.routes-slider {
+.slides-slider {
 	background: linear-gradient(135deg, #fff6f8, #ffffff);
 	border: 1px solid var(--border);
 	border-radius: 16px;
@@ -694,14 +694,14 @@ body {
 	margin-top: 16px;
 }
 
-.route-navigation {
+.slide-navigation {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 16px;
 }
 
-.route-nav-btn {
+.slide-nav-btn {
 	background: var(--accent);
 	color: white;
 	border: none;
@@ -714,12 +714,12 @@ body {
 	transition: all 0.2s ease;
 }
 
-.route-nav-btn:hover {
+.slide-nav-btn:hover {
 	background: #be185d;
 	transform: scale(1.1);
 }
 
-.route-counter {
+.slide-counter {
 	background: var(--background);
 	padding: 8px 16px;
 	border-radius: 20px;
@@ -727,18 +727,18 @@ body {
 	color: var(--accent);
 }
 
-.routes-slides {
+.slides-content {
 	position: relative;
 	min-height: 300px;
 	overflow: hidden;
 }
 
-.route-slide {
+.slide-item {
 	display: none;
 	animation: fadeIn 0.3s ease;
 }
 
-.route-slide.active {
+.slide-item.active {
 	display: block;
 }
 
@@ -747,47 +747,35 @@ body {
 	to { opacity: 1; transform: translateX(0); }
 }
 
-.route-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+.slide-header {
 	margin-bottom: 16px;
 	padding-bottom: 12px;
 	border-bottom: 2px solid var(--border);
 }
 
-.route-header h5 {
+.slide-header h5 {
 	margin: 0;
 	color: var(--accent);
 	font-size: 18px;
 }
 
-.route-time {
-	background: linear-gradient(135deg, var(--accent), #f97316);
-	color: white;
-	padding: 6px 12px;
-	border-radius: 20px;
-	font-size: 14px;
-	font-weight: 600;
-}
-
-.route-info p {
+.slide-info p {
 	margin: 8px 0;
 	color: var(--text);
 }
 
-.route-photos {
+.slide-photos {
 	margin-top: 16px;
 }
 
-.photos-grid-route {
+.photos-grid-slide {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 	gap: 12px;
 	margin-top: 12px;
 }
 
-.photo-item-route {
+.photo-item-slide {
 	aspect-ratio: 1;
 	border-radius: 12px;
 	overflow: hidden;
@@ -795,24 +783,24 @@ body {
 	transition: transform 0.2s ease;
 }
 
-.photo-item-route:hover {
+.photo-item-slide:hover {
 	transform: scale(1.05);
 }
 
-.photo-item-route img {
+.photo-item-slide img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
 
-.route-dots {
+.slide-dots {
 	display: flex;
 	justify-content: center;
 	gap: 8px;
 	margin-top: 16px;
 }
 
-.route-dot {
+.slide-dot {
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
@@ -822,31 +810,31 @@ body {
 	transition: all 0.2s ease;
 }
 
-.route-dot.active {
+.slide-dot.active {
 	background: var(--accent);
 	transform: scale(1.2);
 }
 
-.route-dot:hover {
+.slide-dot:hover {
 	background: var(--accent);
 }
 
-.no-routes {
+.no-slides {
 	text-align: center;
 	color: var(--muted);
 	font-style: italic;
 	padding: 20px;
 }
 
-/* Route Management */
-.route-management {
+/* Slide Management */
+.slide-management {
 	display: flex;
 	gap: 12px;
 	align-items: center;
 	margin-top: 12px;
 }
 
-.route-management select {
+.slide-management select {
 	flex: 1;
 	padding: 8px 12px;
 	border: 1px solid var(--border);
@@ -854,12 +842,12 @@ body {
 	background: white;
 }
 
-.routes-list {
+.slides-list {
 	max-height: 400px;
 	overflow-y: auto;
 }
 
-.route-item {
+.slide-item-admin {
 	background: white;
 	border: 1px solid var(--border);
 	border-radius: 12px;
@@ -867,30 +855,30 @@ body {
 	margin-bottom: 12px;
 }
 
-.route-item-header {
+.slide-item-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 12px;
 }
 
-.route-item-header h5 {
+.slide-item-header h5 {
 	margin: 0;
 	color: var(--accent);
 }
 
-.route-item-actions {
+.slide-item-actions {
 	display: flex;
 	gap: 8px;
 }
 
-.route-item-details p {
+.slide-item-details p {
 	margin: 6px 0;
 	font-size: 14px;
 	color: var(--text);
 }
 
-.route-item-photos {
+.slide-item-photos {
 	margin-top: 8px;
 	font-size: 14px;
 	color: var(--muted);
