@@ -15,7 +15,27 @@ const defaultDateTopics = [
 		activities: ['Yemek yeme', 'Şarap içme', 'Konuşma'],
 		level: 2,
 		unlockCondition: 'İlk date tamamlandıktan sonra',
-		isActive: true
+		isActive: true,
+		routes: [
+			{
+				id: 'route1',
+				title: 'Restoran',
+				description: 'Romantik atmosferde özel yemek',
+				location: 'Merkezi Restoran',
+				time: '19:00',
+				activities: ['Yemek yeme', 'Şarap içme'],
+				photos: []
+			},
+			{
+				id: 'route2',
+				title: 'Yürüyüş',
+				description: 'Yemek sonrası romantik yürüyüş',
+				location: 'Sahil Yolu',
+				time: '21:00',
+				activities: ['Yürüyüş', 'Konuşma'],
+				photos: []
+			}
+		]
 	},
 	{
 		id: '2',
@@ -25,7 +45,36 @@ const defaultDateTopics = [
 		activities: ['Yürüyüş', 'Fotoğraf çekme', 'Piknik'],
 		level: 3,
 		unlockCondition: '2 date tamamlandıktan sonra',
-		isActive: false
+		isActive: false,
+		routes: [
+			{
+				id: 'route3',
+				title: 'Giriş',
+				description: 'Park girişinde buluşma',
+				location: 'Milli Park Girişi',
+				time: '10:00',
+				activities: ['Buluşma', 'Plan yapma'],
+				photos: []
+			},
+			{
+				id: 'route4',
+				title: 'Yürüyüş',
+				description: 'Doğal yolda yürüyüş',
+				location: 'Ana Yürüyüş Yolu',
+				time: '10:30',
+				activities: ['Yürüyüş', 'Fotoğraf çekme'],
+				photos: []
+			},
+			{
+				id: 'route5',
+				title: 'Piknik',
+				description: 'Göl kenarında piknik',
+				location: 'Göl Kenarı',
+				time: '12:00',
+				activities: ['Piknik', 'Dinlenme'],
+				photos: []
+			}
+		]
 	},
 	{
 		id: '3',
@@ -35,7 +84,8 @@ const defaultDateTopics = [
 		activities: ['Müze gezisi', 'Kültürel keşif', 'Öğrenme'],
 		level: 4,
 		unlockCondition: '3 date tamamlandıktan sonra',
-		isActive: false
+		isActive: false,
+		routes: []
 	},
 	{
 		id: '4',
@@ -45,7 +95,8 @@ const defaultDateTopics = [
 		activities: ['Sürpriz aktivite'],
 		level: 5,
 		unlockCondition: '4 date tamamlandıktan sonra',
-		isActive: false
+		isActive: false,
+		routes: []
 	}
 ];
 
@@ -286,6 +337,22 @@ function updateNextDatePage() {
 	
 	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
 	
+	if (!currentTopic || !currentTopic.routes || currentTopic.routes.length === 0) {
+		container.innerHTML = `
+			<div class="next-date-card">
+				<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
+				<p class="location">📍 ${currentDate.location}</p>
+				<div class="preview-section">
+					<h4>Date Konusu</h4>
+					<p><strong>${currentTopic ? currentTopic.title : currentDate.topic}</strong></p>
+					<p>${currentTopic ? currentTopic.description : 'Özel date'}</p>
+				</div>
+				<p class="no-routes">Henüz rota bilgisi eklenmemiş.</p>
+			</div>
+		`;
+		return;
+	}
+	
 	container.innerHTML = `
 		<div class="next-date-card">
 			<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
@@ -294,30 +361,62 @@ function updateNextDatePage() {
 			<div class="date-preview">
 				<div class="preview-section">
 					<h4>Date Konusu</h4>
-					<p><strong>${currentTopic ? currentTopic.title : currentDate.topic}</strong></p>
-					<p>${currentTopic ? currentTopic.description : 'Özel date'}</p>
+					<p><strong>${currentTopic.title}</strong></p>
+					<p>${currentTopic.description}</p>
 				</div>
-				
-				<div class="preview-section">
-					<h4>Planlanan Aktiviteler</h4>
-					<p>${currentTopic ? currentTopic.activities.join(', ') : 'Sürpriz aktiviteler'}</p>
-				</div>
-				
-				<div class="preview-section">
-					<h4>Hava Durumu</h4>
-					<p>🌤️ Güneşli ve sıcak bir gün bekleniyor.</p>
-				</div>
-				
-				<div class="preview-section">
-					<h4>Konum</h4>
-					<div class="map-placeholder">
-						🗺️ Harita yükleniyor...
-						<small>${currentDate.location}</small>
+			</div>
+			
+			<div class="routes-container">
+				<h4>🗺️ Date Rotası</h4>
+				<div class="routes-slider">
+					<div class="route-navigation">
+						<button class="route-nav-btn prev" onclick="changeRoute(-1)">‹</button>
+						<span class="route-counter">
+							<span id="current-route">1</span> / ${currentTopic.routes.length}
+						</span>
+						<button class="route-nav-btn next" onclick="changeRoute(1)">›</button>
+					</div>
+					
+					<div class="routes-slides" id="routes-slides">
+						${currentTopic.routes.map((route, index) => `
+							<div class="route-slide ${index === 0 ? 'active' : ''}" data-route="${index}">
+								<div class="route-header">
+									<h5>${route.title}</h5>
+									<span class="route-time">🕐 ${route.time}</span>
+								</div>
+								<div class="route-info">
+									<p><strong>📍 Konum:</strong> ${route.location}</p>
+									<p><strong>📝 Açıklama:</strong> ${route.description}</p>
+									<p><strong>🎯 Aktiviteler:</strong> ${route.activities.join(', ')}</p>
+								</div>
+								${route.photos && route.photos.length > 0 ? `
+									<div class="route-photos">
+										<div class="photos-grid-route">
+											${route.photos.map(photo => `
+												<div class="photo-item-route">
+													<img src="${photo}" alt="Rota fotoğrafı" />
+												</div>
+											`).join('')}
+										</div>
+									</div>
+								` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
+							</div>
+						`).join('')}
+					</div>
+					
+					<div class="route-dots">
+						${currentTopic.routes.map((_, index) => `
+							<button class="route-dot ${index === 0 ? 'active' : ''}" onclick="goToRoute(${index})"></button>
+						`).join('')}
 					</div>
 				</div>
 			</div>
 		</div>
 	`;
+	
+	// Global route state
+	window.currentRouteIndex = 0;
+	window.totalRoutes = currentTopic.routes.length;
 }
 
 // Kilitli date'ler sayfasını güncelle
@@ -429,6 +528,150 @@ function adminLogin() {
 function updateAdminPages() {
 	updateDateTopicsList();
 	updateLockedDatesPage();
+	updateRouteTopicSelect();
+}
+
+// Rota topic select'i güncelle
+function updateRouteTopicSelect() {
+	const select = document.getElementById('route-topic-select');
+	if (!select) return;
+	
+	select.innerHTML = '<option value="">Date konusu seçin...</option>';
+	
+	dateTopics.forEach(topic => {
+		const option = document.createElement('option');
+		option.value = topic.id;
+		option.textContent = `${topic.title} (${topic.routes ? topic.routes.length : 0} rota)`;
+		select.appendChild(option);
+	});
+}
+
+// Rota yönetimi modal'ı aç
+function manageRoutes() {
+	const select = document.getElementById('route-topic-select');
+	const topicId = select.value;
+	
+	if (!topicId) {
+		alert('Lütfen bir date konusu seçin.');
+		return;
+	}
+	
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic) return;
+	
+	const modal = document.createElement('div');
+	modal.className = 'modal-overlay';
+	modal.innerHTML = `
+		<div class="modal-content route-management-modal">
+			<div class="modal-header">
+				<h3>🗺️ ${topic.title} - Rota Yönetimi</h3>
+				<button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+			</div>
+			<div class="modal-body">
+				<div class="routes-list" id="routes-list-${topicId}">
+					${topic.routes ? topic.routes.map((route, index) => `
+						<div class="route-item" data-route-id="${route.id}">
+							<div class="route-item-header">
+								<h5>${route.title}</h5>
+								<div class="route-item-actions">
+									<button class="btn btn-small btn-secondary" onclick="editRoute('${topicId}', '${route.id}')">Düzenle</button>
+									<button class="btn btn-small btn-danger" onclick="deleteRoute('${topicId}', '${route.id}')">Sil</button>
+								</div>
+							</div>
+							<div class="route-item-details">
+								<p><strong>🕐 Saat:</strong> ${route.time}</p>
+								<p><strong>📍 Konum:</strong> ${route.location}</p>
+								<p><strong>📝 Açıklama:</strong> ${route.description}</p>
+								<p><strong>🎯 Aktiviteler:</strong> ${route.activities.join(', ')}</p>
+								${route.photos && route.photos.length > 0 ? `
+									<div class="route-item-photos">
+										<strong>📸 Görseller:</strong> ${route.photos.length} adet
+									</div>
+								` : ''}
+							</div>
+						</div>
+					`).join('') : '<p class="no-routes">Henüz rota eklenmemiş.</p>'}
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Kapat</button>
+				<button class="btn btn-primary" onclick="addNewRoute('${topicId}'); this.closest('.modal-overlay').remove();">Yeni Rota Ekle</button>
+			</div>
+		</div>
+	`;
+	
+	document.body.appendChild(modal);
+}
+
+// Yeni rota ekle
+function addNewRoute(topicId) {
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic) return;
+	
+	const title = prompt('Rota başlığı:');
+	if (!title) return;
+	
+	const time = prompt('Saat (HH:MM):');
+	if (!time) return;
+	
+	const location = prompt('Konum:');
+	if (!location) return;
+	
+	const description = prompt('Açıklama:');
+	const activities = prompt('Aktiviteler (virgülle ayırın):').split(',').map(a => a.trim());
+	
+	const newRoute = {
+		id: Date.now().toString(),
+		title,
+		time,
+		location,
+		description,
+		activities,
+		photos: []
+	};
+	
+	if (!topic.routes) topic.routes = [];
+	topic.routes.push(newRoute);
+	
+	saveData();
+	updateAdminPages();
+	alert('Rota başarıyla eklendi!');
+}
+
+// Rota düzenle
+function editRoute(topicId, routeId) {
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic || !topic.routes) return;
+	
+	const route = topic.routes.find(r => r.id === routeId);
+	if (!route) return;
+	
+	const title = prompt('Rota başlığı:', route.title);
+	if (!title) return;
+	
+	route.title = title;
+	route.time = prompt('Saat (HH:MM):', route.time) || route.time;
+	route.location = prompt('Konum:', route.location) || route.location;
+	route.description = prompt('Açıklama:', route.description) || route.description;
+	route.activities = prompt('Aktiviteler (virgülle ayırın):', route.activities.join(', ')).split(',').map(a => a.trim());
+	
+	saveData();
+	updateAdminPages();
+	alert('Rota güncellendi!');
+}
+
+// Rota sil
+function deleteRoute(topicId, routeId) {
+	if (!confirm('Bu rotayı silmek istediğinizden emin misiniz?')) return;
+	
+	const topic = dateTopics.find(t => t.id === topicId);
+	if (!topic || !topic.routes) return;
+	
+	topic.routes = topic.routes.filter(r => r.id !== routeId);
+	
+	saveData();
+	updateAdminPages();
+	alert('Rota silindi!');
 }
 
 // Date konuları listesini güncelle
@@ -626,6 +869,59 @@ function editNextDateTime() {
 	saveData();
 	updateHomePage();
 	alert('Date saati güncellendi!');
+}
+
+// Rota navigasyon fonksiyonları
+function changeRoute(direction) {
+	if (!window.totalRoutes) return;
+	
+	window.currentRouteIndex += direction;
+	
+	// Döngüsel navigasyon
+	if (window.currentRouteIndex >= window.totalRoutes) {
+		window.currentRouteIndex = 0;
+	} else if (window.currentRouteIndex < 0) {
+		window.currentRouteIndex = window.totalRoutes - 1;
+	}
+	
+	updateRouteDisplay();
+}
+
+function goToRoute(index) {
+	if (!window.totalRoutes || index < 0 || index >= window.totalRoutes) return;
+	
+	window.currentRouteIndex = index;
+	updateRouteDisplay();
+}
+
+function updateRouteDisplay() {
+	// Tüm slide'ları gizle
+	document.querySelectorAll('.route-slide').forEach(slide => {
+		slide.classList.remove('active');
+	});
+	
+	// Tüm dot'ları pasif yap
+	document.querySelectorAll('.route-dot').forEach(dot => {
+		dot.classList.remove('active');
+	});
+	
+	// Aktif slide'ı göster
+	const activeSlide = document.querySelector(`[data-route="${window.currentRouteIndex}"]`);
+	if (activeSlide) {
+		activeSlide.classList.add('active');
+	}
+	
+	// Aktif dot'ı işaretle
+	const activeDot = document.querySelectorAll('.route-dot')[window.currentRouteIndex];
+	if (activeDot) {
+		activeDot.classList.add('active');
+	}
+	
+	// Sayaç güncelle
+	const counter = document.getElementById('current-route');
+	if (counter) {
+		counter.textContent = window.currentRouteIndex + 1;
+	}
 }
 
 // Geçmiş date ekle

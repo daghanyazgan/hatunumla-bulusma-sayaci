@@ -158,6 +158,18 @@
 						<button class="btn btn-secondary" onclick="editNextDateTime()">Date Saatini Düzenle</button>
 					</div>
 					
+					<!-- Rota Yönetimi -->
+					<div class="admin-section">
+						<h4>Rota Yönetimi</h4>
+						<p>Date konularına rota ekleyebilir, düzenleyebilirsiniz.</p>
+						<div class="route-management">
+							<select id="route-topic-select">
+								<option value="">Date konusu seçin...</option>
+							</select>
+							<button class="btn btn-primary" onclick="manageRoutes()">Rotaları Yönet</button>
+						</div>
+					</div>
+					
 					<div class="date-topics-list" id="date-topics-list">
 						<!-- Dinamik olarak yüklenecek -->
 					</div>
