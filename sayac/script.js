@@ -16,14 +16,16 @@ const defaultDateTopics = [
 		level: 2,
 		unlockCondition: 'İlk date tamamlandıktan sonra',
 		isActive: true,
-		slides: [
+		routes: [
 			{
 				title: 'Restoran',
+				location: 'Kadıköy',
 				description: 'Romantik atmosferde özel yemek',
 				photos: []
 			},
 			{
-				title: 'Yürüyüş',
+				title: 'Sahil Yürüyüşü',
+				location: 'Moda',
 				description: 'Yemek sonrası romantik yürüyüş',
 				photos: []
 			}
@@ -38,19 +40,22 @@ const defaultDateTopics = [
 		level: 3,
 		unlockCondition: '2 date tamamlandıktan sonra',
 		isActive: false,
-		slides: [
+		routes: [
 			{
 				title: 'Park Girişi',
+				location: 'Belgrad Ormanı',
 				description: 'Doğal ortamda buluşma ve plan yapma',
 				photos: []
 			},
 			{
 				title: 'Ana Yürüyüş',
+				location: 'Doğa Yolu',
 				description: 'Doğal yolda keyifli yürüyüş',
 				photos: []
 			},
 			{
 				title: 'Göl Kenarı',
+				location: 'Gölet',
 				description: 'Göl kenarında piknik ve dinlenme',
 				photos: []
 			}
@@ -65,7 +70,7 @@ const defaultDateTopics = [
 		level: 4,
 		unlockCondition: '3 date tamamlandıktan sonra',
 		isActive: false,
-		slides: []
+		routes: []
 	},
 	{
 		id: '4',
@@ -76,7 +81,7 @@ const defaultDateTopics = [
 		level: 5,
 		unlockCondition: '4 date tamamlandıktan sonra',
 		isActive: false,
-		slides: []
+		routes: []
 	}
 ];
 
@@ -315,47 +320,89 @@ function updateNextDatePage() {
 		minute: '2-digit'
 	};
 	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	
+	if (!currentTopic || !currentTopic.routes || currentTopic.routes.length === 0) {
+		container.innerHTML = `
+			<div class="next-date-card">
+				<div class="date-header">
+					<h2>${currentTopic ? currentTopic.title : currentDate.topic}</h2>
+					<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
+				</div>
+				<p class="no-routes">Henüz rota bilgisi eklenmemiş.</p>
+			</div>
+		`;
+		return;
+	}
+	
 	container.innerHTML = `
 		<div class="next-date-card">
-			<h3>${date.toLocaleDateString('tr-TR', options)}</h3>
+			<div class="date-header">
+				<h2>${currentTopic.title}</h2>
+				<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
+			</div>
 			
-			<div class="date-info-section">
-				<div class="info-item">
-					<h4>📍 Konum</h4>
-					<p id="date-location">${currentDate.location}</p>
-					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateLocation()">Düzenle</button>' : ''}
-				</div>
-				
-				<div class="info-item">
-					<h4>📝 Açıklama</h4>
-					<p id="date-description">${currentDate.description || 'Henüz açıklama eklenmemiş.'}</p>
-					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateDescription()">Düzenle</button>' : ''}
-				</div>
-				
-				<div class="info-item">
-					<h4>🕐 Saat</h4>
-					<p id="date-time">${date.toTimeString().slice(0, 5)}</p>
-					${isAdminLoggedIn ? '<button class="btn btn-small btn-secondary" onclick="editDateTime()">Düzenle</button>' : ''}
-				</div>
-				
-				<div class="info-item">
-					<h4>📸 Görseller</h4>
-					<div class="date-photos" id="date-photos">
-						${currentDate.photos && currentDate.photos.length > 0 ? `
-							<div class="photos-grid-date">
-								${currentDate.photos.map(photo => `
-									<div class="photo-item-date">
-										<img src="${photo}" alt="Date fotoğrafı" />
-									</div>
-								`).join('')}
+			<div class="routes-showcase">
+				${currentTopic.routes.map((route, index) => `
+					<div class="route-section">
+						<div class="route-header">
+							<h3>${index + 1}. Rotamız</h3>
+							<div class="route-location">
+								<input type="text" id="route-location-${index}" value="${route.location}" 
+									${isAdminLoggedIn ? '' : 'readonly'} 
+									placeholder="İlçe/Konum" 
+									onchange="updateRouteLocation(${index}, this.value)">
 							</div>
-						` : '<p class="no-photos">Henüz görsel eklenmemiş.</p>'}
+						</div>
+						
+						<div class="route-content">
+							<div class="route-images">
+								${route.photos && route.photos.length > 0 ? `
+									<div class="image-slider" id="slider-${index}">
+										<div class="slider-container">
+											${route.photos.map((photo, photoIndex) => `
+												<div class="slide ${photoIndex === 0 ? 'active' : ''}">
+													<img src="${photo}" alt="Rota fotoğrafı" />
+												</div>
+											`).join('')}
+										</div>
+										${route.photos.length > 1 ? `
+											<button class="slider-btn prev" onclick="changeSlide(${index}, -1)">‹</button>
+											<button class="slider-btn next" onclick="changeSlide(${index}, 1)">›</button>
+											<div class="slider-dots">
+												${route.photos.map((_, photoIndex) => `
+													<button class="dot ${photoIndex === 0 ? 'active' : ''}" 
+														onclick="goToSlide(${index}, ${photoIndex})"></button>
+												`).join('')}
+											</div>
+										` : ''}
+									</div>
+								` : '<div class="no-images">Henüz görsel eklenmemiş</div>'}
+							</div>
+							
+							<div class="route-description">
+								<textarea id="route-description-${index}" 
+									${isAdminLoggedIn ? '' : 'readonly'} 
+									placeholder="Rota açıklaması" 
+									onchange="updateRouteDescription(${index}, this.value)">${route.description}</textarea>
+							</div>
+							
+							${isAdminLoggedIn ? `
+								<div class="route-actions">
+									<button class="btn btn-small btn-primary" onclick="addRoutePhotos(${index})">Görsel Ekle</button>
+								</div>
+							` : ''}
+						</div>
 					</div>
-					${isAdminLoggedIn ? '<button class="btn btn-small btn-primary" onclick="addDatePhotos()">Görsel Ekle</button>' : ''}
-				</div>
+				`).join('')}
 			</div>
 		</div>
 	`;
+	
+	// Slider state'lerini başlat
+	currentTopic.routes.forEach((_, index) => {
+		window[`currentSlide_${index}`] = 0;
+	});
 }
 
 // Kilitli date'ler sayfasını güncelle
@@ -863,12 +910,34 @@ function editDateTime() {
 	alert('Date saati güncellendi!');
 }
 
-// Date görselleri ekle
-function addDatePhotos() {
-	if (!currentDate) {
-		alert('Aktif date bulunmuyor.');
-		return;
-	}
+// Rota konumunu güncelle
+function updateRouteLocation(routeIndex, newLocation) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	currentTopic.routes[routeIndex].location = newLocation;
+	saveData();
+}
+
+// Rota açıklamasını güncelle
+function updateRouteDescription(routeIndex, newDescription) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	currentTopic.routes[routeIndex].description = newDescription;
+	saveData();
+}
+
+// Rota görselleri ekle
+function addRoutePhotos(routeIndex) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
 	
 	const input = document.createElement('input');
 	input.type = 'file';
@@ -880,8 +949,8 @@ function addDatePhotos() {
 		files.forEach(file => {
 			const reader = new FileReader();
 			reader.onload = function(e) {
-				if (!currentDate.photos) currentDate.photos = [];
-				currentDate.photos.push(e.target.result);
+				if (!currentTopic.routes[routeIndex].photos) currentTopic.routes[routeIndex].photos = [];
+				currentTopic.routes[routeIndex].photos.push(e.target.result);
 				saveData();
 				updateNextDatePage();
 			};
@@ -890,6 +959,53 @@ function addDatePhotos() {
 	};
 	
 	input.click();
+}
+
+// Image slider fonksiyonları
+function changeSlide(routeIndex, direction) {
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	const photos = currentTopic.routes[routeIndex].photos;
+	if (!photos || photos.length <= 1) return;
+	
+	window[`currentSlide_${routeIndex}`] += direction;
+	
+	if (window[`currentSlide_${routeIndex}`] >= photos.length) {
+		window[`currentSlide_${routeIndex}`] = 0;
+	} else if (window[`currentSlide_${routeIndex}`] < 0) {
+		window[`currentSlide_${routeIndex}`] = photos.length - 1;
+	}
+	
+	updateSliderDisplay(routeIndex);
+}
+
+function goToSlide(routeIndex, slideIndex) {
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	const photos = currentTopic.routes[routeIndex].photos;
+	if (!photos || slideIndex < 0 || slideIndex >= photos.length) return;
+	
+	window[`currentSlide_${routeIndex}`] = slideIndex;
+	updateSliderDisplay(routeIndex);
+}
+
+function updateSliderDisplay(routeIndex) {
+	const slider = document.getElementById(`slider-${routeIndex}`);
+	if (!slider) return;
+	
+	const slides = slider.querySelectorAll('.slide');
+	const dots = slider.querySelectorAll('.dot');
+	const currentSlide = window[`currentSlide_${routeIndex}`];
+	
+	// Tüm slide'ları gizle
+	slides.forEach(slide => slide.classList.remove('active'));
+	dots.forEach(dot => dot.classList.remove('active'));
+	
+	// Aktif slide'ı göster
+	if (slides[currentSlide]) slides[currentSlide].classList.add('active');
+	if (dots[currentSlide]) dots[currentSlide].classList.add('active');
 }
 
 // Slide navigasyon fonksiyonları
