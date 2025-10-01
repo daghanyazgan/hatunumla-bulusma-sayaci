@@ -689,6 +689,7 @@ body {
 	background: linear-gradient(135deg, var(--accent), #f97316);
 	color: white;
 	border-radius: 16px;
+	position: relative;
 }
 
 .date-header h2 {
@@ -698,9 +699,79 @@ body {
 }
 
 .date-time {
-	margin: 0;
+	margin: 0 0 16px 0;
 	font-size: 16px;
 	opacity: 0.9;
+}
+
+.date-header-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	margin-top: 16px;
+}
+
+/* Admin Controls */
+.admin-controls {
+	background: linear-gradient(135deg, #f8fafc, #ffffff);
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	padding: 24px;
+	margin-bottom: 32px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.admin-section {
+	margin-bottom: 24px;
+}
+
+.admin-section:last-child {
+	margin-bottom: 0;
+}
+
+.admin-section h4 {
+	margin: 0 0 16px 0;
+	color: var(--accent);
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.form-row {
+	margin-bottom: 16px;
+}
+
+.form-row:last-child {
+	margin-bottom: 0;
+}
+
+.form-row label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--text);
+}
+
+.form-row input,
+.form-row textarea {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: white;
+	font-size: 14px;
+	font-family: inherit;
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+}
+
+.form-row textarea {
+	min-height: 80px;
+	resize: vertical;
 }
 
 /* Routes Showcase */
@@ -733,6 +804,12 @@ body {
 	font-weight: 600;
 }
 
+.route-location {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
 .route-location input {
 	padding: 8px 12px;
 	border: 1px solid var(--border);
@@ -745,6 +822,12 @@ body {
 .route-location input:read-only {
 	background: #f9f9f9;
 	color: var(--muted);
+}
+
+.route-location .btn-small {
+	padding: 4px 8px;
+	font-size: 12px;
+	min-width: auto;
 }
 
 /* Route Content */
@@ -793,6 +876,30 @@ body {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+}
+
+.delete-photo {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: rgba(220, 38, 38, 0.9);
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 28px;
+	height: 28px;
+	font-size: 16px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	z-index: 3;
+}
+
+.delete-photo:hover {
+	background: rgba(220, 38, 38, 1);
+	transform: scale(1.1);
 }
 
 .slider-btn {

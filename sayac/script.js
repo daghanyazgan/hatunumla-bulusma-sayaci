@@ -340,7 +340,34 @@ function updateNextDatePage() {
 			<div class="date-header">
 				<h2>${currentTopic.title}</h2>
 				<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
+				${isAdminLoggedIn ? `
+					<div class="date-header-actions">
+						<button class="btn btn-primary" onclick="editDateTitle()">Başlık Düzenle</button>
+						<button class="btn btn-secondary" onclick="editDateTime()">Saat Düzenle</button>
+					</div>
+				` : ''}
 			</div>
+			
+			${isAdminLoggedIn ? `
+				<div class="admin-controls">
+					<div class="admin-section">
+						<h4>📝 Date Bilgileri</h4>
+						<div class="form-row">
+							<label>Date Başlığı:</label>
+							<input type="text" id="edit-date-title" value="${currentTopic.title}" onchange="updateDateTitle(this.value)">
+						</div>
+						<div class="form-row">
+							<label>Genel Açıklama:</label>
+							<textarea id="edit-date-description" placeholder="Date açıklaması" onchange="updateDateDescription(this.value)">${currentTopic.description}</textarea>
+						</div>
+					</div>
+					
+					<div class="admin-section">
+						<h4>🗺️ Rota Yönetimi</h4>
+						<button class="btn btn-primary" onclick="addNewRoute()">+ Yeni Rota Ekle</button>
+					</div>
+				</div>
+			` : ''}
 			
 			<div class="routes-showcase">
 				${currentTopic.routes.map((route, index) => `
@@ -352,6 +379,9 @@ function updateNextDatePage() {
 									${isAdminLoggedIn ? '' : 'readonly'} 
 									placeholder="İlçe/Konum" 
 									onchange="updateRouteLocation(${index}, this.value)">
+								${isAdminLoggedIn ? `
+									<button class="btn btn-small btn-danger" onclick="deleteRoute(${index})" title="Rotayı Sil">×</button>
+								` : ''}
 							</div>
 						</div>
 						
@@ -363,6 +393,9 @@ function updateNextDatePage() {
 											${route.photos.map((photo, photoIndex) => `
 												<div class="slide ${photoIndex === 0 ? 'active' : ''}">
 													<img src="${photo}" alt="Rota fotoğrafı" />
+													${isAdminLoggedIn ? `
+														<button class="delete-photo" onclick="deleteRoutePhoto(${index}, ${photoIndex})" title="Fotoğrafı Sil">×</button>
+													` : ''}
 												</div>
 											`).join('')}
 										</div>
@@ -389,7 +422,8 @@ function updateNextDatePage() {
 							
 							${isAdminLoggedIn ? `
 								<div class="route-actions">
-									<button class="btn btn-small btn-primary" onclick="addRoutePhotos(${index})">Görsel Ekle</button>
+									<button class="btn btn-small btn-primary" onclick="addRoutePhotos(${index})">📸 Görsel Ekle</button>
+									<button class="btn btn-small btn-secondary" onclick="editRouteTitle(${index})">✏️ Başlık Düzenle</button>
 								</div>
 							` : ''}
 						</div>
@@ -1006,6 +1040,94 @@ function updateSliderDisplay(routeIndex) {
 	// Aktif slide'ı göster
 	if (slides[currentSlide]) slides[currentSlide].classList.add('active');
 	if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+}
+
+// Date başlığını güncelle
+function updateDateTitle(newTitle) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic) return;
+	
+	currentTopic.title = newTitle;
+	currentDate.topic = newTitle;
+	saveData();
+	updateNextDatePage();
+}
+
+// Date açıklamasını güncelle
+function updateDateDescription(newDescription) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic) return;
+	
+	currentTopic.description = newDescription;
+	saveData();
+}
+
+// Yeni rota ekle
+function addNewRoute() {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic) return;
+	
+	if (!currentTopic.routes) currentTopic.routes = [];
+	
+	const newRoute = {
+		title: `Yeni Rota ${currentTopic.routes.length + 1}`,
+		location: '',
+		description: '',
+		photos: []
+	};
+	
+	currentTopic.routes.push(newRoute);
+	saveData();
+	updateNextDatePage();
+}
+
+// Rotayı sil
+function deleteRoute(routeIndex) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes) return;
+	
+	if (confirm('Bu rotayı silmek istediğinizden emin misiniz?')) {
+		currentTopic.routes.splice(routeIndex, 1);
+		saveData();
+		updateNextDatePage();
+	}
+}
+
+// Rota başlığını düzenle
+function editRouteTitle(routeIndex) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	const newTitle = prompt('Yeni rota başlığı:', currentTopic.routes[routeIndex].title);
+	if (newTitle && newTitle.trim()) {
+		currentTopic.routes[routeIndex].title = newTitle.trim();
+		saveData();
+		updateNextDatePage();
+	}
+}
+
+// Rota fotoğrafını sil
+function deleteRoutePhoto(routeIndex, photoIndex) {
+	if (!currentDate) return;
+	
+	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
+	if (!currentTopic || !currentTopic.routes || !currentTopic.routes[routeIndex]) return;
+	
+	if (confirm('Bu fotoğrafı silmek istediğinizden emin misiniz?')) {
+		currentTopic.routes[routeIndex].photos.splice(photoIndex, 1);
+		saveData();
+		updateNextDatePage();
+	}
 }
 
 // Slide navigasyon fonksiyonları
