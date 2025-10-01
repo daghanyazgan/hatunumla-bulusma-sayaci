@@ -1077,10 +1077,22 @@ function updateDateDescription(newDescription) {
 
 // Yeni rota ekle
 function addNewRoute() {
-	if (!currentDate) return;
+	console.log('addNewRoute çağrıldı');
+	console.log('currentDate:', currentDate);
+	console.log('dateTopics:', dateTopics);
+	
+	if (!currentDate) {
+		alert('Aktif date bulunamadı!');
+		return;
+	}
 	
 	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	if (!currentTopic) return;
+	console.log('currentTopic:', currentTopic);
+	
+	if (!currentTopic) {
+		alert('Date konusu bulunamadı!');
+		return;
+	}
 	
 	if (!currentTopic.routes) currentTopic.routes = [];
 	
@@ -1092,9 +1104,15 @@ function addNewRoute() {
 		mapAddress: ''
 	};
 	
+	console.log('Yeni rota ekleniyor:', newRoute);
+	
 	currentTopic.routes.push(newRoute);
+	console.log('Güncel routes:', currentTopic.routes);
+	
 	saveData();
 	updateNextDatePage();
+	
+	alert('Rota eklendi!');
 }
 
 // Rotayı sil
