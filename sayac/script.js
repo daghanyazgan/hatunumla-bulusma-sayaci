@@ -19,15 +19,17 @@ const defaultDateTopics = [
 		routes: [
 			{
 				title: 'Restoran',
-				location: 'Kadıköy',
 				description: 'Romantik atmosferde özel yemek',
-				photos: []
+				photos: [],
+				instagram: '',
+				mapAddress: ''
 			},
 			{
 				title: 'Sahil Yürüyüşü',
-				location: 'Moda',
 				description: 'Yemek sonrası romantik yürüyüş',
-				photos: []
+				photos: [],
+				instagram: '',
+				mapAddress: ''
 			}
 		]
 	},
@@ -43,21 +45,24 @@ const defaultDateTopics = [
 		routes: [
 			{
 				title: 'Park Girişi',
-				location: 'Belgrad Ormanı',
 				description: 'Doğal ortamda buluşma ve plan yapma',
-				photos: []
+				photos: [],
+				instagram: '',
+				mapAddress: ''
 			},
 			{
 				title: 'Ana Yürüyüş',
-				location: 'Doğa Yolu',
 				description: 'Doğal yolda keyifli yürüyüş',
-				photos: []
+				photos: [],
+				instagram: '',
+				mapAddress: ''
 			},
 			{
 				title: 'Göl Kenarı',
-				location: 'Gölet',
 				description: 'Göl kenarında piknik ve dinlenme',
-				photos: []
+				photos: [],
+				instagram: '',
+				mapAddress: ''
 			}
 		]
 	},
@@ -305,11 +310,6 @@ function updateCompletedPage() {
 function updateNextDatePage() {
 	const container = document.getElementById('next-date-content');
 	
-	console.log('updateNextDatePage çağrıldı');
-	console.log('currentDate:', currentDate);
-	console.log('dateTopics:', dateTopics);
-	console.log('isAdminLoggedIn:', isAdminLoggedIn);
-	
 	if (!currentDate) {
 		container.innerHTML = '<div class="no-content"><p>Henüz bir date planlanmamış.</p></div>';
 		return;
@@ -326,7 +326,6 @@ function updateNextDatePage() {
 	};
 	
 	const currentTopic = dateTopics.find(t => t.title === currentDate.topic);
-	console.log('currentTopic:', currentTopic);
 	
 	if (!currentTopic || !currentTopic.routes || currentTopic.routes.length === 0) {
 		container.innerHTML = `
@@ -335,7 +334,16 @@ function updateNextDatePage() {
 					<h2>${currentTopic ? currentTopic.title : currentDate.topic}</h2>
 					<p class="date-time">${date.toLocaleDateString('tr-TR', options)}</p>
 				</div>
-				<p class="no-routes">Henüz rota bilgisi eklenmemiş.</p>
+				<div class="routes-container">
+					${isAdminLoggedIn ? `
+						<div class="add-route-card" onclick="addNewRoute()">
+							<div class="add-route-content">
+								<div class="plus-icon">+</div>
+								<p>İlk Rotayı Ekle</p>
+							</div>
+						</div>
+					` : '<p class="no-routes">Henüz rota bilgisi eklenmemiş.</p>'}
+				</div>
 			</div>
 		`;
 		return;
